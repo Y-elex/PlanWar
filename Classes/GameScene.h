@@ -1,5 +1,6 @@
 #pragma once
 #include "cocos2d.h"
+#include "GameDefs.h"
 #include "Player.h"
 #include "Enemy.h"
 #include "Bullet.h"
@@ -9,20 +10,22 @@
 
 class GameScene : public cocos2d::Scene {
 public:
-    static cocos2d::Scene* createScene();
+    static GameScene*         create(SceneType type = SceneType::EARTH);
+    static cocos2d::Scene*    createScene(SceneType type = SceneType::EARTH);
     bool init() override;
     void update(float dt) override;
-    CREATE_FUNC(GameScene);
 
 private:
+    SceneType _sceneType = SceneType::EARTH;
+
     Player* _player = nullptr;
     std::vector<Enemy*>   _enemies;
     std::vector<Bullet*>  _playerBullets;
     std::vector<Bullet*>  _enemyBullets;
     std::vector<PowerUp*> _powerUps;
 
-    cocos2d::Label* _scoreLabel = nullptr;
-    cocos2d::Label* _livesLabel = nullptr;
+    cocos2d::Label* _scoreLabel  = nullptr;
+    cocos2d::Label* _livesLabel  = nullptr;
     cocos2d::Label* _weaponLabel = nullptr;
 
     int   _score = 0;
@@ -36,6 +39,9 @@ private:
     cocos2d::Vec2 _origin;
 
     void setupBackground();
+    void setupEarthBg();
+    void setupMoonBg();
+    void setupMarsBg();
     void setupUI();
     void setupInput();
     void updateBackground(float dt);

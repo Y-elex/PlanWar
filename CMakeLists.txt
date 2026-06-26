@@ -29,6 +29,7 @@ list(APPEND GAME_SOURCE
      )
 list(APPEND GAME_HEADER
      Classes/AppDelegate.h
+     Classes/GameDefs.h
      Classes/MainMenuScene.h
      Classes/GameScene.h
      Classes/Player.h
@@ -55,6 +56,9 @@ set(all_code_files ${GAME_HEADER} ${GAME_SOURCE})
 add_executable(${APP_NAME} ${all_code_files})
 
 target_link_libraries(${APP_NAME} cocos2d)
+if(MSVC)
+    target_compile_options(${APP_NAME} PRIVATE /utf-8)
+endif()
 target_include_directories(${APP_NAME}
         PRIVATE Classes
         PRIVATE ${COCOS2DX_ROOT_PATH}/cocos/audio/include/
