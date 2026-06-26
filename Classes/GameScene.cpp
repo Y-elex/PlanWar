@@ -70,105 +70,53 @@ void GameScene::setupBackground() {
     }
 }
 
-void GameScene::setupEarthBg() {
-    // Deep-space blue base
-    auto bg = DrawNode::create();
-    bg->drawSolidRect(Vec2(0, 0), Vec2(_visibleSize.width, _visibleSize.height),
-                      Color4F(0.02f, 0.04f, 0.14f, 1.0f));
-    addChild(bg, -10);
-
-    // Faint nebula patches
-    auto nebula = DrawNode::create();
-    nebula->drawSolidCircle(Vec2(_visibleSize.width * 0.78f, _visibleSize.height * 0.68f),
-                            65, 0.0f, 24, Color4F(0.06f, 0.06f, 0.28f, 0.22f));
-    nebula->drawSolidCircle(Vec2(_visibleSize.width * 0.18f, _visibleSize.height * 0.42f),
-                            42, 0.0f, 20, Color4F(0.04f, 0.04f, 0.22f, 0.16f));
-    addChild(nebula, -8);
-
-    // Two scrolling blue-white star layers
+// Load a planet image as two tiled sprite layers (tags 100 & 101) that scroll.
+void GameScene::loadPlanetSprites(const std::string& filename) {
     for (int layer = 0; layer < 2; layer++) {
-        auto stars = DrawNode::create();
-        stars->setTag(100 + layer);
-        stars->setPositionY(static_cast<float>(layer) * _visibleSize.height);
-        for (int i = 0; i < 78; i++) {
-            float x = CCRANDOM_0_1() * _visibleSize.width;
-            float y = CCRANDOM_0_1() * _visibleSize.height;
-            float r = 0.4f + CCRANDOM_0_1() * 1.6f;
-            float b = 0.45f + CCRANDOM_0_1() * 0.55f;
-            stars->drawDot(Vec2(x, y), r, Color4F(b * 0.85f, b * 0.88f, b, 1.0f));
-        }
-        addChild(stars, -9);
+        auto sprite = Sprite::create(filename);
+        if (!sprite) return;
+        // Scale to cover the screen
+        sprite->setScaleX(_visibleSize.width  / sprite->getContentSize().width);
+        sprite->setScaleY(_visibleSize.height / sprite->getContentSize().height);
+        // Anchor bottom-left so positioning is straightforward
+        sprite->setAnchorPoint(Vec2(0, 0));
+        sprite->setPosition(Vec2(0, static_cast<float>(layer) * _visibleSize.height));
+        sprite->setTag(100 + layer);
+        addChild(sprite, -10);
     }
 }
 
-void GameScene::setupMoonBg() {
-    // Near-black charcoal base
-    auto bg = DrawNode::create();
-    bg->drawSolidRect(Vec2(0, 0), Vec2(_visibleSize.width, _visibleSize.height),
-                      Color4F(0.05f, 0.05f, 0.06f, 1.0f));
-    addChild(bg, -10);
-
-    // Static distant craters (grey ring outlines)
-    auto craters = DrawNode::create();
-    craters->drawCircle(Vec2(_visibleSize.width * 0.20f, _visibleSize.height * 0.62f),
-                        46, 0.0f, 28, false, Color4F(0.18f, 0.18f, 0.18f, 0.40f));
-    craters->drawCircle(Vec2(_visibleSize.width * 0.74f, _visibleSize.height * 0.38f),
-                        28, 0.0f, 20, false, Color4F(0.15f, 0.15f, 0.15f, 0.35f));
-    craters->drawCircle(Vec2(_visibleSize.width * 0.48f, _visibleSize.height * 0.78f),
-                        18, 0.0f, 16, false, Color4F(0.20f, 0.20f, 0.20f, 0.30f));
-    craters->drawCircle(Vec2(_visibleSize.width * 0.85f, _visibleSize.height * 0.70f),
-                        12, 0.0f, 14, false, Color4F(0.17f, 0.17f, 0.17f, 0.28f));
-    addChild(craters, -8);
-
-    // Sparse bright-white star layers
+// Overlay scrolling star dots on top of the planet image.
+void GameScene::addStarOverlay(int count, Color4F starColor) {
     for (int layer = 0; layer < 2; layer++) {
         auto stars = DrawNode::create();
-        stars->setTag(100 + layer);
+        stars->setTag(200 + layer);
         stars->setPositionY(static_cast<float>(layer) * _visibleSize.height);
-        for (int i = 0; i < 52; i++) {
+        for (int i = 0; i < count; i++) {
             float x = CCRANDOM_0_1() * _visibleSize.width;
             float y = CCRANDOM_0_1() * _visibleSize.height;
             float r = 0.5f + CCRANDOM_0_1() * 1.4f;
-            float b = 0.60f + CCRANDOM_0_1() * 0.40f;
-            stars->drawDot(Vec2(x, y), r, Color4F(b, b, b, 1.0f));
+            float b = 0.35f + CCRANDOM_0_1() * 0.65f;
+            stars->drawDot(Vec2(x, y), r,
+                Color4F(starColor.r * b, starColor.g * b, starColor.b * b, 0.75f));
         }
-        addChild(stars, -9);
+        addChild(stars, -8);
     }
 }
 
+void GameScene::setupEarthBg() {
+    loadPlanetSprites("res/bg_earth.jpg");
+    addStarOverlay(50, Color4F(0.85f, 0.90f, 1.0f, 1.0f));
+}
+
+void GameScene::setupMoonBg() {
+    loadPlanetSprites("res/bg_moon.jpg");
+    addStarOverlay(70, Color4F(1.0f, 1.0f, 1.0f, 1.0f));
+}
+
 void GameScene::setupMarsBg() {
-    // Dark rust base
-    auto bg = DrawNode::create();
-    bg->drawSolidRect(Vec2(0, 0), Vec2(_visibleSize.width, _visibleSize.height),
-                      Color4F(0.14f, 0.05f, 0.02f, 1.0f));
-    addChild(bg, -10);
-
-    // Reddish upper atmosphere glow (layered translucent rects)
-    auto atmos = DrawNode::create();
-    float h = _visibleSize.height;
-    for (int i = 0; i < 6; i++) {
-        float alpha = 0.10f - i * 0.015f;
-        atmos->drawSolidRect(Vec2(0, h * (0.72f + i * 0.045f)),
-                             Vec2(_visibleSize.width, h),
-                             Color4F(0.65f, 0.12f, 0.0f, alpha));
-    }
-    addChild(atmos, -8);
-
-    // Orange-tinted scrolling star / dust layers
-    for (int layer = 0; layer < 2; layer++) {
-        auto stars = DrawNode::create();
-        stars->setTag(100 + layer);
-        stars->setPositionY(static_cast<float>(layer) * _visibleSize.height);
-        for (int i = 0; i < 65; i++) {
-            float x  = CCRANDOM_0_1() * _visibleSize.width;
-            float y  = CCRANDOM_0_1() * _visibleSize.height;
-            float r  = 0.4f + CCRANDOM_0_1() * 1.5f;
-            float bv = 0.45f + CCRANDOM_0_1() * 0.55f;
-            // Warm orange-white tint
-            stars->drawDot(Vec2(x, y), r, Color4F(bv, bv * 0.72f, bv * 0.38f, 1.0f));
-        }
-        addChild(stars, -9);
-    }
+    loadPlanetSprites("res/bg_mars.jpg");
+    addStarOverlay(45, Color4F(1.0f, 0.80f, 0.50f, 1.0f));
 }
 
 // ── UI & Input ────────────────────────────────────────────────────────────────
@@ -238,14 +186,25 @@ void GameScene::update(float dt) {
 }
 
 void GameScene::updateBackground(float dt) {
-    float speed = (_sceneType == SceneType::MOON)  ? 24.0f :
-                  (_sceneType == SceneType::MARS)  ? 50.0f : 38.0f;
+    // Planet image layers scroll slowly
+    float bgSpeed = (_sceneType == SceneType::MOON) ? 18.0f :
+                    (_sceneType == SceneType::MARS) ? 35.0f : 26.0f;
+    // Star overlay layers scroll a bit faster (parallax)
+    float starSpeed = bgSpeed * 1.6f;
+
     for (int i = 0; i < 2; i++) {
-        auto layer = getChildByTag(100 + i);
-        if (!layer) continue;
-        layer->setPositionY(layer->getPositionY() - speed * dt);
-        if (layer->getPositionY() < -_visibleSize.height)
-            layer->setPositionY(layer->getPositionY() + _visibleSize.height * 2);
+        auto bg = getChildByTag(100 + i);
+        if (bg) {
+            bg->setPositionY(bg->getPositionY() - bgSpeed * dt);
+            if (bg->getPositionY() < -_visibleSize.height)
+                bg->setPositionY(bg->getPositionY() + _visibleSize.height * 2);
+        }
+        auto stars = getChildByTag(200 + i);
+        if (stars) {
+            stars->setPositionY(stars->getPositionY() - starSpeed * dt);
+            if (stars->getPositionY() < -_visibleSize.height)
+                stars->setPositionY(stars->getPositionY() + _visibleSize.height * 2);
+        }
     }
 }
 

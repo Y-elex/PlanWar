@@ -42,6 +42,8 @@ private:
     void setupEarthBg();
     void setupMoonBg();
     void setupMarsBg();
+    void loadPlanetSprites(const std::string& filename);
+    void addStarOverlay(int count, cocos2d::Color4F starColor);
     void setupUI();
     void setupInput();
     void updateBackground(float dt);
